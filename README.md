@@ -11,7 +11,7 @@ PWA-sovellus päivittäisten punnerrusten seurantaan.
 
 ## Asennus iPhoneen / iPadiin
 
-1. Avaa sivu Safarissa: `https://KÄYTTÄJÄNIMI.github.io/punnerruslaski/`
+1. Avaa sivu Safarissa: `https://vdy8qdbddj-creator.github.io/Punnerrus/`
 2. Paina **Jaa**-painiketta (neliö nuolella)
 3. Valitse **Lisää Koti-valikkoon**
 4. Paina **Lisää** – sovellus ilmestyy kotinäytölle

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Punnerrus">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Punnerruslaski</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap');
+
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161a18;
+    --surface2: #1e2421;
+    --border: #2a3330;
+    --accent: #4ade80;
+    --accent2: #86efac;
+    --muted: #4a5c52;
+    --text: #e8f0eb;
+    --text2: #8fa898;
+    --danger: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 20px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .title span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 8px 4px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d0f0e;
+    font-weight: 500;
+  }
+
+  /* PAGE VIEWS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* STATS PAGE */
+  .stats-section {
+    padding: 20px;
+  }
+
+  .period-selector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .period-btn {
+    flex: 1;
+    padding: 10px 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .period-btn.active {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* BIG NUMBER */
+  .hero-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-stat::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: var(--accent);
+    opacity: 0.05;
+    border-radius: 50%;
+  }
+
+  .hero-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .hero-num {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .hero-period {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* CHART */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .chart-title {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .chart-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .chart-nav-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-size: 16px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .chart-nav-btn:active { opacity: 0.7; }
+
+  .chart-period-label {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 120px;
+  }
+
+  .bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+    cursor: pointer;
+  }
+
+  .bar {
+    width: 100%;
+    background: var(--border);
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+    min-height: 2px;
+    position: relative;
+  }
+
+  .bar.has-data {
+    background: linear-gradient(180deg, var(--accent), #22c55e);
+  }
+
+  .bar.today {
+    background: linear-gradient(180deg, #86efac, var(--accent));
+    box-shadow: 0 0 12px rgba(74,222,128,0.3);
+  }
+
+  .bar-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .bar-val {
+    font-size: 9px;
+    color: var(--text2);
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* INPUT SECTION */
+  .input-section {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .input-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .input-group label {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    color-scheme: dark;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+  }
+
+  input[type="number"] {
+    font-size: 24px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: #0d0f0e;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .save-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .save-feedback {
+    text-align: center;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 8px;
+    height: 16px;
+    transition: opacity 0.3s;
+  }
+
+  /* HISTORY PAGE */
+  .history-header {
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text2);
+  }
+
+  .history-title strong {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .history-list {
+    padding: 12px 20px 100px;
+  }
+
+  .history-month {
+    margin-bottom: 4px;
+  }
+
+  .month-header {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 12px 0 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .month-total {
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    gap: 12px;
+  }
+
+  .history-date {
+    font-size: 12px;
+    color: var(--text2);
+    flex: 1;
+  }
+
+  .history-count {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .edit-btn, .del-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+
+  .edit-btn { color: var(--text2); }
+  .del-btn { color: var(--danger); border-color: transparent; }
+  .edit-btn:active, .del-btn:active { opacity: 0.7; }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .modal-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    margin-bottom: 16px;
+    -webkit-appearance: none;
+  }
+
+  .modal-input:focus { border-color: var(--accent); }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-cancel {
+    flex: 1;
+    padding: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .modal-save {
+    flex: 2;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: #0d0f0e;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .empty-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  /* NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: rgba(13,15,14,0.9);
+    border-top: 1px solid var(--border);
+    display: flex;
+    backdrop-filter: blur(12px);
+    z-index: 50;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 14px 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+  }
+
+  .nav-btn.active { color: var(--accent); }
+  .nav-icon { font-size: 20px; }
+
+  .scrollable {
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+    padding-bottom: 80px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PAGE: STATS -->
+<div id="page-stats" class="page active">
+  <div class="header">
+    <div>
+      <div class="title">Punnerrus<span>.</span></div>
+      <div class="subtitle">Seurantalaski</div>
+    </div>
+  </div>
+
+  <div class="scrollable">
+    <div class="stats-section">
+      <div class="period-selector">
+        <button class="period-btn active" onclick="setPeriod('week')">Viikko</button>
+        <button class="period-btn" onclick="setPeriod('month')">Kuukausi</button>
+        <button class="period-btn" onclick="setPeriod('year')">Vuosi</button>
+      </div>
+
+      <div class="hero-stat">
+        <div class="hero-label" id="hero-label">Tällä viikolla</div>
+        <div class="hero-num" id="hero-num">0</div>
+        <div class="hero-period" id="hero-period">punnerrusta</div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-nav">
+          <button class="chart-nav-btn" onclick="chartNav(-1)">‹</button>
+          <div class="chart-period-label" id="chart-period-label">–</div>
+          <button class="chart-nav-btn" onclick="chartNav(1)">›</button>
+        </div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div class="input-label">Lisää punnerrukset</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Päivä</label>
+          <input type="date" id="entry-date" />
+        </div>
+        <div class="input-group">
+          <label>Määrä</label>
+          <input type="number" id="entry-count" min="1" max="9999" placeholder="0" />
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveEntry()">Tallenna</button>
+      <div class="save-feedback" id="save-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: HISTORY -->
+<div id="page-history" class="page">
+  <div class="history-header">
+    <div class="history-title"><strong>Historia</strong> & muokkaus</div>
+  </div>
+  <div id="history-list" class="history-list"></div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">Muokkaa merkintää</div>
+    <div class="modal-date" id="modal-date-label"></div>
+    <input type="number" class="modal-input" id="modal-input" min="0" max="9999" />
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Peruuta</button>
+      <button class="modal-save" onclick="saveModal()">Tallenna</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-stats" onclick="showPage('stats')">
+    <span class="nav-icon">📊</span>Tilastot
+  </button>
+  <button class="nav-btn" id="nav-history" onclick="showPage('history')">
+    <span class="nav-icon">📋</span>Historia
+  </button>
+</div>
+
+<script>
+  // ─── DATA ───────────────────────────────────────────────────────────
+  const STORAGE_KEY = 'punnerrus_data';
+
+  function loadData() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch { return {}; }
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  let data = loadData();
+  let currentPeriod = 'week';
+  let chartOffset = 0;
+  let editingDate = null;
+
+  // ─── DATE HELPERS ────────────────────────────────────────────────────
+  function today() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function formatDateFI(dateStr) {
+    const [y,m,d] = dateStr.split('-');
+    const months = ['tammikuuta','helmikuuta','maaliskuuta','huhtikuuta','toukokuuta','kesäkuuta',
+                    'heinäkuuta','elokuuta','syyskuuta','lokakuuta','marraskuuta','joulukuuta'];
+    return `${parseInt(d)}. ${months[parseInt(m)-1]} ${y}`;
+  }
+
+  function getWeekDates(offset = 0) {
+    const now = new Date();
+    const day = now.getDay(); // 0=sun
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+    }
+    return dates;
+  }
+
+  function getMonthDates(offset = 0) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth() + offset;
+    const date = new Date(y, m, 1);
+    const days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
+    const dates = [];
+    for (let i = 1; i <= days; i++) {
+      dates.push(`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`);
+    }
+    return dates;
+  }
+
+  function getYearMonths(offset = 0) {
+    const y = new Date().getFullYear() + offset;
+    const months = [];
+    for (let m = 1; m <= 12; m++) {
+      months.push({ key: `${y}-${String(m).padStart(2,'0')}`, label: monthShort(m), year: y });
+    }
+    return months;
+  }
+
+  function monthShort(m) {
+    return ['Tam','Hel','Maa','Huh','Tou','Kes','Hei','Elo','Syy','Lok','Mar','Jou'][m-1];
+  }
+
+  function monthLong(m) {
+    return ['tammikuu','helmikuu','maaliskuu','huhtikuu','toukokuu','kesäkuu',
+            'heinäkuu','elokuu','syyskuu','lokakuu','marraskuu','joulukuu'][m-1];
+  }
+
+  function weekdayShort(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    return ['Su','Ma','Ti','Ke','To','Pe','La'][d.getDay()];
+  }
+
+  // ─── STATS ───────────────────────────────────────────────────────────
+  function setPeriod(period) {
+    currentPeriod = period;
+    chartOffset = 0;
+    document.querySelectorAll('.period-btn').forEach((b,i) => {
+      b.classList.toggle('active', ['week','month','year'][i] === period);
+    });
+    renderStats();
+  }
+
+  function chartNav(dir) {
+    chartOffset += dir;
+    renderStats();
+  }
+
+  function renderStats() {
+    const todayStr = today();
+
+    if (currentPeriod === 'week') {
+      const dates = getWeekDates(chartOffset);
+      const total = dates.reduce((s,d) => s + (data[d] || 0), 0);
+      const d0 = new Date(dates[0]+'T12:00:00'), d6 = new Date(dates[6]+'T12:00:00');
+      const fmt = d => `${d.getDate()}.${d.getMonth()+1}.`;
+
+      document.getElementById('hero-label').textContent = chartOffset === 0 ? 'Tällä viikolla' : 'Viikko';
+      document.getElementById('hero-num').textContent = total;
+      document.getElementById('chart-period-label').textContent = `${fmt(d0)} – ${fmt(d6)}`;
+
+      const maxVal = Math.max(...dates.map(d => data[d] || 0), 1);
+      const html = dates.map(d => {
+        const val = data[d] || 0;
+        const h = Math.max(val / maxVal * 100, val > 0 ? 8 : 2);
+        const isToday = d === todayStr;
+        const cls = val > 0 ? (isToday ? 'today' : 'has-data') : '';
+        return `<div class="bar-wrap">
+          <div class="bar ${cls}" style="height:${h}%">
+            ${val > 0 ? `<div class="bar-val">${val}</div>` : ''}
+          </div>
+          <div class="bar-label">${weekdayShort(d)}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('bar-chart').innerHTML = html;
+
+    } else if (currentPeriod === 'month') {
+      const dates = getMonthDates(chartOffset);
+      const total = dates.reduce((s,d) => s + (data[d] || 0), 0);
+      const m = parseInt(dates[0].split('-')[1]);
+      const y = parseInt(dates[0].split('-')[0]);
+
+      document.getElementById('hero-label').textContent = chartOffset === 0 ? 'Tässä kuussa' : monthLong(m);
+      document.getElementById('hero-num').textContent = total;
+      document.getElementById('chart-period-label').textContent = `${monthLong(m)} ${y}`;
+
+      const maxVal = Math.max(...dates.map(d => data[d] || 0), 1);
+      // show every ~5th label
+      const html = dates.map((d, i) => {
+        const val = data[d] || 0;
+        const h = Math.max(val / maxVal * 100, val > 0 ? 6 : 2);
+        const isToday = d === todayStr;
+        const cls = val > 0 ? (isToday ? 'today' : 'has-data') : '';
+        const day = parseInt(d.split('-')[2]);
+        const showLabel = day === 1 || day % 5 === 0;
+        return `<div class="bar-wrap">
+          <div class="bar ${cls}" style="height:${h}%">
+            ${val > 0 ? `<div class="bar-val">${val}</div>` : ''}
+          </div>
+          <div class="bar-label">${showLabel ? day : ''}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('bar-chart').innerHTML = html;
+
+    } else {
+      const months = getYearMonths(chartOffset);
+      const total = Object.entries(data)
+        .filter(([k]) => k.startsWith(String(months[0].year)))
+        .reduce((s,[,v]) => s + v, 0);
+
+      document.getElementById('hero-label').textContent = chartOffset === 0 ? 'Tänä vuonna' : months[0].year;
+      document.getElementById('hero-num').textContent = total;
+      document.getElementById('chart-period-label').textContent = String(months[0].year);
+
+      const monthTotals = months.map(({key}) => {
+        const prefix = key + '-';
+        return Object.entries(data).filter(([k]) => k.startsWith(prefix)).reduce((s,[,v]) => s+v, 0);
+      });
+      const maxVal = Math.max(...monthTotals, 1);
+      const curMonth = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+
+      const html = months.map(({key, label}, i) => {
+        const val = monthTotals[i];
+        const h = Math.max(val / maxVal * 100, val > 0 ? 6 : 2);
+        const isThis = key === curMonth;
+        const cls = val > 0 ? (isThis ? 'today' : 'has-data') : '';
+        return `<div class="bar-wrap">
+          <div class="bar ${cls}" style="height:${h}%">
+            ${val > 0 ? `<div class="bar-val">${val}</div>` : ''}
+          </div>
+          <div class="bar-label">${label}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('bar-chart').innerHTML = html;
+    }
+  }
+
+  // ─── ENTRY ────────────────────────────────────────────────────────────
+  function saveEntry() {
+    const dateVal = document.getElementById('entry-date').value;
+    const countVal = parseInt(document.getElementById('entry-count').value);
+    if (!dateVal || isNaN(countVal) || countVal < 1) {
+      showFeedback('Syötä päivä ja määrä ✕', true);
+      return;
+    }
+    data[dateVal] = countVal;
+    saveData(data);
+    document.getElementById('entry-count').value = '';
+    showFeedback(`Tallennettu: ${countVal} kpl ✓`);
+    renderStats();
+  }
+
+  function showFeedback(msg, err = false) {
+    const el = document.getElementById('save-feedback');
+    el.textContent = msg;
+    el.style.color = err ? 'var(--danger)' : 'var(--accent)';
+    el.style.opacity = '1';
+    setTimeout(() => { el.style.opacity = '0'; }, 2000);
+  }
+
+  // ─── HISTORY ──────────────────────────────────────────────────────────
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    const sorted = Object.entries(data).sort((a,b) => b[0].localeCompare(a[0]));
+
+    if (sorted.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">🏋️</div>
+        Ei vielä merkintöjä.<br>Lisää ensimmäinen tilastoista.
+      </div>`;
+      return;
+    }
+
+    // group by month
+    const byMonth = {};
+    sorted.forEach(([d, v]) => {
+      const m = d.slice(0,7);
+      if (!byMonth[m]) byMonth[m] = [];
+      byMonth[m].push([d, v]);
+    });
+
+    const months = ['tammikuu','helmikuu','maaliskuu','huhtikuu','toukokuu','kesäkuu',
+                    'heinäkuu','elokuu','syyskuu','lokakuu','marraskuu','joulukuu'];
+
+    let html = '';
+    Object.entries(byMonth).sort((a,b) => b[0].localeCompare(a[0])).forEach(([m, entries]) => {
+      const [y, mo] = m.split('-');
+      const mTotal = entries.reduce((s,[,v]) => s+v, 0);
+      html += `<div class="history-month">
+        <div class="month-header">
+          <span>${months[parseInt(mo)-1]} ${y}</span>
+          <span class="month-total">${mTotal} yht.</span>
+        </div>`;
+      entries.forEach(([d, v]) => {
+        const weekdays = ['su','ma','ti','ke','to','pe','la'];
+        const wd = weekdays[new Date(d+'T12:00:00').getDay()];
+        const [, , day] = d.split('-');
+        html += `<div class="history-item">
+          <div class="history-date">${parseInt(day)}. ${months[parseInt(mo)-1].slice(0,3)}. <span style="color:var(--muted)">${wd}</span></div>
+          <div class="history-count">${v}</div>
+          <button class="edit-btn" onclick="openModal('${d}')">✎</button>
+          <button class="del-btn" onclick="deleteEntry('${d}')">✕</button>
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    list.innerHTML = html;
+  }
+
+  function deleteEntry(dateStr) {
+    if (!confirm(`Poistetaan ${formatDateFI(dateStr)}?`)) return;
+    delete data[dateStr];
+    saveData(data);
+    renderHistory();
+    renderStats();
+  }
+
+  // ─── MODAL ────────────────────────────────────────────────────────────
+  function openModal(dateStr) {
+    editingDate = dateStr;
+    document.getElementById('modal-date-label').textContent = formatDateFI(dateStr);
+    document.getElementById('modal-input').value = data[dateStr] || '';
+    document.getElementById('edit-modal').classList.add('open');
+    setTimeout(() => document.getElementById('modal-input').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+    editingDate = null;
+  }
+
+  function saveModal() {
+    const val = parseInt(document.getElementById('modal-input').value);
+    if (isNaN(val) || val < 0) { closeModal(); return; }
+    if (val === 0) { delete data[editingDate]; }
+    else { data[editingDate] = val; }
+    saveData(data);
+    closeModal();
+    renderHistory();
+    renderStats();
+  }
+
+  // ─── NAVIGATION ───────────────────────────────────────────────────────
+  function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`page-${page}`).classList.add('active');
+    document.getElementById(`nav-${page}`).classList.add('active');
+    if (page === 'history') renderHistory();
+  }
+
+  // ─── SERVICE WORKER ───────────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js');
+    });
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────────────
+  document.getElementById('entry-date').value = today();
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  renderStats();
+</script>
+</body>
+</html>
